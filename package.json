@@ -1,31 +1,24 @@
 {
-    "name": "terraform-template",
-    "version": "0.0.0",
-    "description": "A custom Terraform module GitHub template repository to manage AWS resource with Semantic Release support.",
-    "license": "MIT",
-    "scripts": {
-        "release": "semantic-release"
-    },
-    "devDependencies": {
-        "@semantic-release/changelog": "^6.0.1",
-        "@semantic-release/commit-analyzer": "^13.0.1",
-        "@semantic-release/github": "^12.0.6",
-        "@semantic-release/git": "^10.0.1",
-        "semantic-release": "^25.0.3",
-        "@semantic-release/release-notes-generator": "^14.0.3"
-    },
-    "main": "index.js",
-    "directories": {
-        "example": "examples"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/subhamay-bhattacharyya/terraform-template.git"
-    },
-    "keywords": [],
-    "author": "",
-    "bugs": {
-        "url": "https://github.com/subhamay-bhattacharyya/terraform-template/issues"
-    },
-    "homepage": "https://github.com/subhamay-bhattacharyya/terraform-template#readme"
+  "name": "terraform-google-service-demo",
+  "version": "1.0.0",
+  "description": "Terraform module for provisioning a Google Cloud Storage resource on GCP.",
+  "scripts": {
+    "lint": "pre-commit run --all-files",
+    "tf:fmt": "cd tf && terraform fmt -recursive",
+    "tf:validate": "cd tf && terraform init -backend=false && terraform validate",
+    "tf:plan:devl": "cd tf && terraform plan -var-file=environments/devl/auto.terraform.tfvars.json",
+    "tf:plan:test": "cd tf && terraform plan -var-file=environments/test/auto.terraform.tfvars.json",
+    "tf:plan:prod": "cd tf && terraform plan -var-file=environments/prod/auto.terraform.tfvars.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/subhamay-bhattacharyya-gha/terraform-google-service-demo"
+  },
+  "keywords": [
+    "terraform",
+    "gcp",
+    "google-cloud-storage",
+    "iac"
+  ],
+  "license": "MIT"
 }

@@ -5,22 +5,24 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Environment to deploy to (e.g., devl, test, prod)"
+        description: "Environment to destroy"
         required: true
-        type: environment
+        type: choice
+        options:
+          - devl
+          - test
+          - prod
         default: devl
 
 
 jobs:
-  apply:
-    name: 🚧 Run Terraform Destroy
-    uses: subhamay-bhattacharyya-gha/tf-apply-wf/.github/workflows/terraform-destroy.yaml@main
+  destroy:
+    name: 💥 Run Terraform Destroy
+    uses: subhamay-bhattacharyya-gha/terraform-destroy-wf/.github/workflows/terraform-destroy.yaml@v1.0.0
     with:
-      environment: ${{ inputs.environment }}
-      terraform-dir: ${{ inputs.terraform-dir }}
-      tf-vars-file: ${{ inputs.tf-vars-file }}
-      ci-pipeline: false
+      cloud-provider: gcp
+      backend-type: remote
     secrets:
-      aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
-      infracost-api-key: ${{ secrets.INFRACOST_API_KEY }}
-      infracost-gist-id: ${{ secrets.INFRACOST_GIST_ID }}
+      tfc-token: ${{ secrets.TF_TOKEN_APP_TERRAFORM_IO }}
+      gcp-wif-provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+      gcp-service-account: ${{ vars.GCP_SERVICE_ACCOUNT }}

@@ -1,113 +1,120 @@
-# terraform-docs
+# terraform-google-service-demo
 
-[![Build Status](https://github.com/terraform-docs/terraform-docs/workflows/ci/badge.svg)](https://github.com/terraform-docs/terraform-docs/actions) [![GoDoc](https://pkg.go.dev/badge/github.com/terraform-docs/terraform-docs)](https://pkg.go.dev/github.com/terraform-docs/terraform-docs) [![Go Report Card](https://goreportcard.com/badge/github.com/terraform-docs/terraform-docs)](https://goreportcard.com/report/github.com/terraform-docs/terraform-docs) [![Codecov Report](https://codecov.io/gh/terraform-docs/terraform-docs/branch/master/graph/badge.svg)](https://codecov.io/gh/terraform-docs/terraform-docs) [![License](https://img.shields.io/github/license/terraform-docs/terraform-docs)](https://github.com/terraform-docs/terraform-docs/blob/master/LICENSE) [![Latest release](https://img.shields.io/github/v/release/terraform-docs/terraform-docs)](https://github.com/terraform-docs/terraform-docs/releases)
+![Release](https://github.com/subhamay-bhattacharyya-tf/terraform-google-service-demo/actions/workflows/ci.yaml/badge.svg)&nbsp;![GCP](https://img.shields.io/badge/GCP-4285F4?logo=googlecloud&logoColor=white)&nbsp;![Commit Activity](https://img.shields.io/github/commit-activity/t/subhamay-bhattacharyya-tf/terraform-google-service-demo)&nbsp;![Last Commit](https://img.shields.io/github/last-commit/subhamay-bhattacharyya-tf/terraform-google-service-demo)&nbsp;![Release Date](https://img.shields.io/github/release-date/subhamay-bhattacharyya-tf/terraform-google-service-demo)&nbsp;![Repo Size](https://img.shields.io/github/repo-size/subhamay-bhattacharyya-tf/terraform-google-service-demo)&nbsp;![File Count](https://img.shields.io/github/directory-file-count/subhamay-bhattacharyya-tf/terraform-google-service-demo)&nbsp;![Issues](https://img.shields.io/github/issues/subhamay-bhattacharyya-tf/terraform-google-service-demo)&nbsp;![Top Language](https://img.shields.io/github/languages/top/subhamay-bhattacharyya-tf/terraform-google-service-demo)&nbsp;![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-623CE4?logo=anthropic&logoColor=white)&nbsp;![Custom Endpoint](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/bsubhamay/476e6e7583432e960e6de16d5223e6a3/raw/terraform-google-service-demo.json?)&nbsp;![Terraform Version](https://img.shields.io/badge/terraform-%3E%3D1.3-blue)&nbsp;![Provider Version](https://img.shields.io/badge/google-%3D7.25.0-blue)
 
-![terraform-docs-teaser](./images/terraform-docs-teaser.png)
+Terraform root module that provisions and manages a **Google Cloud Storage (GCS) bucket** on GCP.
 
-## What is terraform-docs
+---
 
-A utility to generate documentation from Terraform modules in various output formats.
+## Overview
 
-## Documentation
+This repository is a Terraform root module that provisions a GCS bucket on GCP by invoking the remote `terraform-google-gcs-bucket` module from GitHub. Configuration is supplied per-environment via JSON input files (`input-jsons/<env>/gcs_config.json`) and referenced through the `gcs_config_path` variable. The module supports three environments — `devl`, `test`, and `prod` — each with its own `tf/environments/<env>/auto.terraform.tfvars.json` file. Remote state is managed via Terraform Cloud (HCP).
 
-- **Users**
-  - Read the [User Guide] to learn how to use terraform-docs
-  - Read the [Formats Guide] to learn about different output formats of terraform-docs
-  - Refer to [Config File Reference] for all the available configuration options
-- **Developers**
-  - Read [Contributing Guide] before submitting a pull request
+---
 
-Visit [our website] for all documentation.
+## Requirements
 
-## Installation
+| Name | Version |
+|---|---|
+| terraform | >= 1.3.0 |
+| google | = 7.25.0 |
 
-The latest version can be installed using `go get`:
+**Additional prerequisites:**
+- GCP service account credentials JSON at `tf/sa-key/sa-key.json`
+- Terraform Cloud organisation `subhamay-bhattacharyya-projects` with workspace `terraform-google-service-demo`
+- GCP project `prj-17-cloud-storage-16748` with Storage API enabled
 
-```bash
-GO111MODULE="on" go get github.com/terraform-docs/terraform-docs@v0.12.0
-```
+---
 
-**NOTE:** to download any version **before** `v0.9.1` (inclusive) you need to use to
-old module namespace (`segmentio`):
+## Inputs
 
-```bash
-# only for v0.9.1 and before
-GO111MODULE="on" go get github.com/segmentio/terraform-docs@v0.9.1
-```
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `environment` | `string` | No | `"devl"` | Environment name — `devl`, `test`, or `prod`. |
+| `project_code` | `string` | No | `"gcsdemo"` | Short project prefix used in resource naming. |
+| `gcs_config_path` | `map(string)` | No | `{ basic = "gcs_config.json" }` | Map of config keys to GCS config JSON filenames. |
+| `credentials_file` | `string` | Yes | — | Path to the GCP service account credentials JSON file. |
+| `project_id` | `string` | Yes | — | GCP project ID in which resources will be created. |
+| `region` | `string` | Yes | — | GCP region for provider configuration (e.g. `us-central1`). |
 
-**NOTE:** please use the latest go to do this, we use 1.16.0 but ideally go 1.15 or greater.
+### `gcs_config.json` fields
 
-This will put `terraform-docs` in `$(go env GOPATH)/bin`. If you encounter the error
-`terraform-docs: command not found` after installation then you may need to either add
-that directory to your `$PATH` as shown [here] or do a manual installation by cloning
-the repo and run `make build` from the repository which will put `terraform-docs` in:
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `name` | `string` | — | Globally unique bucket name. |
+| `location` | `string` | `"US"` | Bucket location (region or multi-region). |
+| `storage_class` | `string` | `"STANDARD"` | `STANDARD`, `NEARLINE`, `COLDLINE`, or `ARCHIVE`. |
+| `force_destroy` | `bool` | `false` | Delete non-empty bucket on `terraform destroy`. |
+| `uniform_bucket_level_access` | `bool` | `true` | Enable uniform bucket-level access (IAM-only). |
+| `public_access_prevention` | `string` | `"enforced"` | `"enforced"` or `"inherited"`. |
+| `versioning_enabled` | `bool` | `false` | Enable object versioning. |
+| `labels` | `map(string)` | `{}` | Labels applied to the bucket. |
 
-```bash
-$(go env GOPATH)/src/github.com/terraform-docs/terraform-docs/bin/$(uname | tr '[:upper:]' '[:lower:]')-amd64/terraform-docs
-```
+---
 
-Stable binaries are also available on the [releases] page. To install, download the
-binary for your platform from "Assets" and place this into your `$PATH`:
+## Outputs
 
-```bash
-curl -Lo ./terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v0.12.0/terraform-docs-v0.12.0-$(uname)-amd64.tar.gz
-tar -xzf terraform-docs.tar.gz
-chmod +x terraform-docs
-mv terraform-docs /some-dir-in-your-PATH/terraform-docs
-```
+| Name | Description |
+|---|---|
+| `bucket_id` | Bucket ID. |
+| `bucket_name` | Bucket name. |
+| `bucket_project` | GCP project containing the bucket. |
+| `bucket_location` | Bucket location. |
+| `bucket_url` | `gs://` URL. |
+| `bucket_self_link` | Bucket self-link URI. |
+| `bucket_storage_class` | Storage class. |
+| `bucket_force_destroy` | Whether force-destroy is enabled. |
 
-**NOTE:** Windows releases are in `ZIP` format.
+---
 
-If you are a Mac OS X user, you can use [Homebrew]:
+## Environment tfvars
 
-```bash
-brew install terraform-docs
-```
+| File | Environment |
+|---|---|
+| `tf/environments/devl/auto.terraform.tfvars.json` | Development |
+| `tf/environments/test/auto.terraform.tfvars.json` | Test |
+| `tf/environments/prod/auto.terraform.tfvars.json` | Production |
 
-or
+---
 
-```bash
-brew install terraform-docs/tap/terraform-docs
-```
+## Contributing
 
-Windows users can install using [Scoop]:
-
-```bash
-scoop bucket add terraform-docs https://github.com/terraform-docs/scoop-bucket
-scoop install terraform-docs
-```
-
-or [Chocolatey]:
-
-```bash
-choco install terraform-docs
-```
-
-Alternatively you also can run `terraform-docs` as a container:
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for full guidelines.
 
 ```bash
-docker run quay.io/terraform-docs/terraform-docs:0.12.0
+git clone git@github.com:subhamay-bhattacharyya-tf/terraform-google-service-demo.git
+cd terraform-google-service-demo
+cd tf && terraform fmt -recursive && terraform init -backend=false && terraform validate
 ```
 
-**NOTE:** Docker tag `latest` refers to _latest_ stable released version and `edge`
-refers to HEAD of `master` at any given point in time.
+1. Fork the repository and create a feature branch (`git checkout -b feat/my-change`)
+2. Run `terraform fmt` and `terraform validate`
+3. Open a pull request against `main` with a clear description of changes
 
-## Community
+---
 
-- Discuss terraform-docs on [Slack]
+## CI / Workload Identity Federation Setup
+
+The CI workflow authenticates to GCP via [Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation). If the job fails with `Permission 'iam.serviceAccounts.getAccessToken' denied`, grant the WIF pool principal the required IAM binding:
+
+```bash
+gcloud iam service-accounts add-iam-policy-binding \
+    "<service-account-email>" \
+    --project="prj-17-cloud-storage-16748" \
+    --role="roles/iam.workloadIdentityUser" \
+    --member="principalSet://iam.googleapis.com/projects/<project-number>/locations/global/workloadIdentityPools/<pool-name>/attribute.repository/subhamay-bhattacharyya-tf/terraform-google-service-demo"
+```
+
+The repository variables required by the CI workflow are:
+
+| Variable | Description |
+|---|---|
+| `TF_LINT_VER` | TFLint version to install |
+| `GCP_WORKLOAD_IDENTITY_PROVIDER` | Full WIF provider resource name |
+| `GCP_SERVICE_ACCOUNT` | Service account email to impersonate |
+
+---
 
 ## License
 
-MIT License - Copyright (c) 2021 The terraform-docs Authors.
-
-[User Guide]: ./docs/user-guide/introduction.md
-[Formats Guide]: ./docs/reference/terraform-docs.md
-[Config File Reference]: ./docs/user-guide/configuration.md
-[Contributing Guide]: CONTRIBUTING.md
-[our website]: https://terraform-docs.io/
-[here]: https://golang.org/doc/code.html#GOPATH
-[releases]: https://github.com/terraform-docs/terraform-docs/releases
-[Homebrew]: https://brew.sh
-[Scoop]: https://scoop.sh/
-[Chocolatey]: https://www.chocolatey.org
-[Slack]: https://slack.terraform-docs.io/
+[MIT](LICENSE)

@@ -1,62 +1,48 @@
-## =====================================================================================================================
-## 📁 Project Name        : Terraform GitHub Template Repository
-## 📝 Description         : A reusable template for setting up Terraform-based Infrastructure-as-Code (IaC) projects
-##                         on GitHub using GitHub Actions for CI/CD automation.
-##
-## 🔄 Modification History:
-##   Version   Date          Author     Description
-##   -------   ------------  --------   -------------------------------------------------------------------------------
-##   1.0.0     Jun 20, 2025  Subhamay   Initial version with GitHub Actions workflow for Terraform CI/CD
-##
-## =====================================================================================================================
+# -- tf/variables.tf
 
-# --- root/variables.tf ---
+# -- The two variables environment and project_code are must for all Terraform
+# -- configurations. They are used for naming resources and defining the
+# -- environment in which the infrastructure will be deployed.
 
-variable "aws-region" {
-  type    = string
-  default = "us-east-1"
-}
-######################################## Project Name ##############################################
-variable "project-name" {
-  description = "The name of the project"
+variable "environment" {
+  description = "Environment name (devl, test, prod)"
   type        = string
-  default     = "GitOps Minicamp 2024"
-}
-######################################## Environment Name ##########################################
-variable "environment-name" {
-  type        = string
-  description = <<EOT
-  (Optional) The environment in which to deploy our resources to.
-
-  Options:
-  - devl : Development
-  - test: Test
-  - prod: Production
-
-  Default: devl
-  EOT
   default     = "devl"
 
   validation {
-    condition     = can(regex("^devl$|^test$|^prod$", var.environment-name))
-    error_message = "Err: environment is not valid."
+    condition     = contains(["devl", "test", "prod"], var.environment)
+    error_message = "Environment must be devl, test, or prod."
   }
 }
 
-variable "ci-pipeline" {
-  description = "CI/CD pipeline configuration"
+variable "project_code" {
+  description = "Project code prefix for resource naming (e.g., gcsdemo)"
   type        = string
-  default     = "true"
+  default     = "gcsdemo"
 }
-## Uncomment the following lines to use S3 as the backend for Terraform state management when running locally.
-## For GitHub Actions, the backend is configured in the workflow file.
 
-# variable "tf-state-bucket" {
-#   description = "The name of the TF state S3 bucket"
-#   type        = string
-# }
+# Configuration File Paths
+# ============================================================================
 
-variable "bucket-name" {
-  description = "Name of the S3 bucket"
+variable "gcs_config_path" {
+  description = "Map of config keys to GCS config JSON file paths"
+  type        = map(string)
+  default = {
+    basic = "gcs_config.json"
+  }
+}
+
+variable "credentials_file" {
+  description = "Path to the GCP service account credentials JSON file"
+  type        = string
+}
+
+variable "project_id" {
+  description = "The GCP project ID in which resources will be created."
+  type        = string
+}
+
+variable "region" {
+  description = "GCP region for provider configuration (e.g., us-central1)"
   type        = string
 }
